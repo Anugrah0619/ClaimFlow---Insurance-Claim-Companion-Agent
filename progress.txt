@@ -1,0 +1,81 @@
+PROJECT: ClaimFlow – Insurance Claim Companion
+
+CURRENT STATUS (AS OF LAST WORK SESSION)
+
+1. UI STATUS
+- Streamlit-based UI is complete and functional.
+- Users can:
+  - Upload insurance policy PDF
+  - Describe incident details
+  - View dynamically generated claim tasks
+  - Upload claim-related documents
+  - Track task status (Pending / Completed / Blocked)
+- Task progress bar updates correctly.
+- Notify Insurer task auto-completes when first valid document is accepted.
+
+2. PROJECT STRUCTURE (FINALIZED)
+project/
+│
+├── app.py                         # Streamlit UI + orchestration
+│
+├── agent/
+│   ├── __init__.py
+│   ├── workflow_generator.py      # Generates claim tasks from incident + policy
+│   ├── document_validator.py      # LangGraph ReAct agent for document validation
+│   ├── system_prompt.py           # System prompt for document validation agent
+│
+├── services/
+│   ├── policy_reader.py           # Stub: extracts policy rules (to be expanded later)
+│
+├── models/
+│   ├── claim.py                   # Data structures for claim tasks
+│
+├── requirements.txt
+├── .env
+└── progress.txt
+
+3. AGENT ARCHITECTURE
+- Using LangGraph `create_react_agent`
+- LLM: Google Gemini Developer API
+- Agent responsibility:
+  - Decide whether an uploaded document matches the expected claim task
+  - Return structured JSON:
+    {
+      "accepted": true/false,
+      "reason": "short explanation"
+    }
+- Tool:
+  - validate_uploaded_document (basic rule-based fallback)
+- UI does NOT make decisions; agent decides task acceptance.
+
+4. GEMINI API STATUS
+- Gemini Developer API key is valid and correctly loaded via environment variables.
+- Available models confirmed via `/v1beta/models` endpoint.
+- Working model identifiers:
+  - models/gemini-pro-latest
+  - models/gemini-flash-latest
+- Current blocker:
+  - Gemini free-tier quota exhausted (429 RESOURCE_EXHAUSTED).
+  - App crashes on agent invocation when quota is exceeded.
+
+5. CURRENT BLOCKER
+- Document validation agent cannot be tested further until Gemini API quota resets.
+- This is NOT a code issue.
+- Architecture, model selection, and integration are correct.
+
+6. NEXT STEPS (WHEN QUOTA RESETS)
+- Resume testing document upload flow:
+  - Valid document → task marked Completed
+  - Invalid document → task marked Blocked
+- Add try/except fallback for quota errors (optional).
+- Add caching to prevent repeated validation calls for same document.
+- (Future enhancement) Extract PDF content and validate against policy rules (RAG).
+
+7. LAST CONFIRMED WORKING STATE
+- App runs successfully until agent invocation.
+- UI renders correctly.
+- Task generation via workflow_generator works.
+- Gemini model access confirmed.
+- Only limitation is API rate/quota.
+
+END OF PROGRESS LOG
